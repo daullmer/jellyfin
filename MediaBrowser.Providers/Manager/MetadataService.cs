@@ -683,7 +683,7 @@ namespace MediaBrowser.Providers.Manager
 
                 try
                 {
-                    var localItem = await provider.GetMetadata(itemInfo, options.DirectoryService, cancellationToken).ConfigureAwait(false);
+                    var localItem = await provider.GetMetadata(itemInfo, cancellationToken).ConfigureAwait(false);
 
                     if (localItem.HasMetadata)
                     {

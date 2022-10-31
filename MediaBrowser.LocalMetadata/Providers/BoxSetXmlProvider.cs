@@ -22,8 +22,13 @@ namespace MediaBrowser.LocalMetadata.Providers
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{BoxSetXmlParser}"/> interface.</param>
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
-        public BoxSetXmlProvider(IFileSystem fileSystem, ILogger<BoxSetXmlParser> logger, IProviderManager providerManager)
-            : base(fileSystem)
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
+        public BoxSetXmlProvider(
+            IFileSystem fileSystem,
+            ILogger<BoxSetXmlParser> logger,
+            IProviderManager providerManager,
+            IDirectoryService directoryService)
+            : base(fileSystem, directoryService)
         {
             _logger = logger;
             _providerManager = providerManager;

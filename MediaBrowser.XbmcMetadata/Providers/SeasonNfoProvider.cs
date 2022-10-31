@@ -40,7 +40,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             IUserManager userManager,
             IUserDataManager userDataManager,
             IDirectoryService directoryService)
-            : base(fileSystem)
+            : base(fileSystem, directoryService)
         {
             _logger = logger;
             _config = config;

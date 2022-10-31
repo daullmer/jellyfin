@@ -22,11 +22,13 @@ namespace MediaBrowser.LocalMetadata.Providers
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
         /// <param name="logger">Instance of the <see cref="ILogger{PlaylistXmlParser}"/> interface.</param>
         /// <param name="providerManager">Instance of the <see cref="IProviderManager"/> interface.</param>
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         public PlaylistXmlProvider(
             IFileSystem fileSystem,
             ILogger<PlaylistXmlParser> logger,
-            IProviderManager providerManager)
-            : base(fileSystem)
+            IProviderManager providerManager,
+            IDirectoryService directoryService)
+            : base(fileSystem, directoryService)
         {
             _logger = logger;
             _providerManager = providerManager;

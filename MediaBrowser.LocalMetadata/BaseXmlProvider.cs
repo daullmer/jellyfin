@@ -18,9 +18,11 @@ namespace MediaBrowser.LocalMetadata
         /// Initializes a new instance of the <see cref="BaseXmlProvider{T}"/> class.
         /// </summary>
         /// <param name="fileSystem">Instance of the <see cref="IFileSystem"/> interface.</param>
-        protected BaseXmlProvider(IFileSystem fileSystem)
+        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
+        protected BaseXmlProvider(IFileSystem fileSystem, IDirectoryService directoryService)
         {
             this.FileSystem = fileSystem;
+            this.DirectoryService = directoryService;
         }
 
         /// <inheritdoc />
@@ -36,20 +38,23 @@ namespace MediaBrowser.LocalMetadata
         protected IFileSystem FileSystem { get; }
 
         /// <summary>
+        /// Gets the IDirectoryService.
+        /// </summary>
+        protected IDirectoryService DirectoryService { get; }
+
+        /// <summary>
         /// Gets metadata for item.
         /// </summary>
         /// <param name="info">The item info.</param>
-        /// <param name="directoryService">Instance of the <see cref="IDirectoryService"/> interface.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The metadata for item.</returns>
         public Task<MetadataResult<T>> GetMetadata(
             ItemInfo info,
-            IDirectoryService directoryService,
             CancellationToken cancellationToken)
         {
             var result = new MetadataResult<T>();
 
-            var file = GetXmlFile(info, directoryService);
+            var file = GetXmlFile(info, DirectoryService);
 
             if (file is null)
             {

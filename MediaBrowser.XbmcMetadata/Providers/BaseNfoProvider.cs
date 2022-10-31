@@ -13,11 +13,13 @@ namespace MediaBrowser.XbmcMetadata.Providers
     public abstract class BaseNfoProvider<T> : ILocalMetadataProvider<T>, IHasItemChangeMonitor
         where T : BaseItem, new()
     {
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
+        private readonly IDirectoryService _directoryService;
 
-        protected BaseNfoProvider(IFileSystem fileSystem)
+        protected BaseNfoProvider(IFileSystem fileSystem, IDirectoryService directoryService)
         {
             _fileSystem = fileSystem;
+            _directoryService = directoryService;
         }
 
         /// <inheritdoc />
@@ -26,12 +28,11 @@ namespace MediaBrowser.XbmcMetadata.Providers
         /// <inheritdoc />
         public Task<MetadataResult<T>> GetMetadata(
             ItemInfo info,
-            IDirectoryService directoryService,
             CancellationToken cancellationToken)
         {
             var result = new MetadataResult<T>();
 
-            var file = GetXmlFile(info, directoryService);
+            var file = GetXmlFile(info, _directoryService);
 
             if (file is null)
             {
