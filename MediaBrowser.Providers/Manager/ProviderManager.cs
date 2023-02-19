@@ -22,6 +22,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Model.Configuration;
@@ -63,6 +64,7 @@ namespace MediaBrowser.Providers.Manager
         private IMetadataService[] _metadataServices = Array.Empty<IMetadataService>();
         private IMetadataProvider[] _metadataProviders = Array.Empty<IMetadataProvider>();
         private IMetadataSaver[] _savers = Array.Empty<IMetadataSaver>();
+        private ILiveTvMetadataSaver[] _liveTvSavers = Array.Empty<ILiveTvMetadataSaver>();
         private IExternalId[] _externalIds = Array.Empty<IExternalId>();
         private bool _isProcessingRefreshQueue;
         private bool _disposed;
@@ -116,6 +118,7 @@ namespace MediaBrowser.Providers.Manager
             IEnumerable<IMetadataService> metadataServices,
             IEnumerable<IMetadataProvider> metadataProviders,
             IEnumerable<IMetadataSaver> metadataSavers,
+            IEnumerable<ILiveTvMetadataSaver> liveTvMetadataSavers,
             IEnumerable<IExternalId> externalIds)
         {
             _imageProviders = imageProviders.ToArray();
@@ -124,6 +127,7 @@ namespace MediaBrowser.Providers.Manager
             _externalIds = externalIds.OrderBy(i => i.ProviderName).ToArray();
 
             _savers = metadataSavers.ToArray();
+            _liveTvSavers = liveTvMetadataSavers.ToArray();
         }
 
         /// <inheritdoc/>
@@ -643,6 +647,82 @@ namespace MediaBrowser.Providers.Manager
                         _logger.LogError(ex, "Error in metadata saver");
                     }
                 }
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task SaveLiveTvMetadataAsync(TimerInfo timer, string recordingPath, string seriesPath)
+        {
+            try
+            {
+                var program = string.IsNullOrWhiteSpace(timer.ProgramId) ? null : _libraryManager.GetItemList(new InternalItemsQuery
+                {
+                    IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
+                    Limit = 1,
+                    ExternalId = timer.ProgramId,
+                    DtoOptions = new DtoOptions(true)
+                }).FirstOrDefault() as LiveTvProgram;
+
+                // dummy this up
+                if (program is null)
+                {
+                    program = new LiveTvProgram
+                    {
+                        Name = timer.Name,
+                        Overview = timer.Overview,
+                        Genres = timer.Genres,
+                        CommunityRating = timer.CommunityRating,
+                        OfficialRating = timer.OfficialRating,
+                        ProductionYear = timer.ProductionYear,
+                        PremiereDate = timer.OriginalAirDate,
+                        IndexNumber = timer.EpisodeNumber,
+                        ParentIndexNumber = timer.SeasonNumber
+                    };
+                }
+
+                if (timer.IsSports)
+                {
+                    program.AddGenre("Sports");
+                }
+
+                if (timer.IsKids)
+                {
+                    program.AddGenre("Kids");
+                    program.AddGenre("Children");
+                }
+
+                if (timer.IsNews)
+                {
+                    program.AddGenre("News");
+                }
+
+                var config = GetConfiguration();
+
+                if (config.SaveRecordingNFO)
+                {
+                    if (timer.IsProgramSeries)
+                    {
+                        await SaveSeriesNfoAsync(timer, seriesPath).ConfigureAwait(false);
+                        await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
+                    }
+                    else if (!timer.IsMovie || timer.IsSports || timer.IsNews)
+                    {
+                        await SaveVideoNfoAsync(timer, recordingPath, program, true).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
+                    }
+                }
+
+                if (config.SaveRecordingImages)
+                {
+                    await SaveRecordingImages(recordingPath, program).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving live tv metadata");
             }
         }
 

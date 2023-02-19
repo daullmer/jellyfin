@@ -1294,7 +1294,7 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                     timer.Status = RecordingStatus.InProgress;
                     _timerProvider.AddOrUpdate(timer, false);
 
-                    await SaveRecordingMetadata(timer, recordPath, seriesPath).ConfigureAwait(false);
+                    await _providerManager.SaveLiveTvMetadataAsync(timer, recordPath, seriesPath).ConfigureAwait(false);
 
                     await CreateRecordingFolders().ConfigureAwait(false);
 
@@ -1766,81 +1766,6 @@ namespace Emby.Server.Implementations.LiveTv.EmbyTV
                         _logger.LogError(ex, "Error saving recording image");
                     }
                 }
-            }
-        }
-
-        private async Task SaveRecordingMetadata(TimerInfo timer, string recordingPath, string seriesPath)
-        {
-            try
-            {
-                var program = string.IsNullOrWhiteSpace(timer.ProgramId) ? null : _libraryManager.GetItemList(new InternalItemsQuery
-                {
-                    IncludeItemTypes = new[] { BaseItemKind.LiveTvProgram },
-                    Limit = 1,
-                    ExternalId = timer.ProgramId,
-                    DtoOptions = new DtoOptions(true)
-                }).FirstOrDefault() as LiveTvProgram;
-
-                // dummy this up
-                if (program is null)
-                {
-                    program = new LiveTvProgram
-                    {
-                        Name = timer.Name,
-                        Overview = timer.Overview,
-                        Genres = timer.Genres,
-                        CommunityRating = timer.CommunityRating,
-                        OfficialRating = timer.OfficialRating,
-                        ProductionYear = timer.ProductionYear,
-                        PremiereDate = timer.OriginalAirDate,
-                        IndexNumber = timer.EpisodeNumber,
-                        ParentIndexNumber = timer.SeasonNumber
-                    };
-                }
-
-                if (timer.IsSports)
-                {
-                    program.AddGenre("Sports");
-                }
-
-                if (timer.IsKids)
-                {
-                    program.AddGenre("Kids");
-                    program.AddGenre("Children");
-                }
-
-                if (timer.IsNews)
-                {
-                    program.AddGenre("News");
-                }
-
-                var config = GetConfiguration();
-
-                if (config.SaveRecordingNFO)
-                {
-                    if (timer.IsProgramSeries)
-                    {
-                        await SaveSeriesNfoAsync(timer, seriesPath).ConfigureAwait(false);
-                        await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
-                    }
-                    else if (!timer.IsMovie || timer.IsSports || timer.IsNews)
-                    {
-                        await SaveVideoNfoAsync(timer, recordingPath, program, true).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
-                    }
-                }
-
-                if (config.SaveRecordingImages)
-                {
-                    await SaveRecordingImages(recordingPath, program).ConfigureAwait(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error saving nfo");
             }
         }
 

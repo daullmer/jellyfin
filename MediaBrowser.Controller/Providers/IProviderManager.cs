@@ -3,6 +3,7 @@
 #pragma warning disable CS1591
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 using Jellyfin.Data.Events;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
@@ -107,12 +109,14 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="metadataServices">Metadata services to use.</param>
         /// <param name="metadataProviders">Metadata providers to use.</param>
         /// <param name="metadataSavers">Metadata savers to use.</param>
+        /// <param name="liveTvMetadataSavers">Metadata savers for live tv to use.</param>
         /// <param name="externalIds">External IDs to use.</param>
         void AddParts(
             IEnumerable<IImageProvider> imageProviders,
             IEnumerable<IMetadataService> metadataServices,
             IEnumerable<IMetadataProvider> metadataProviders,
             IEnumerable<IMetadataSaver> metadataSavers,
+            IEnumerable<ILiveTvMetadataSaver> liveTvMetadataSavers,
             IEnumerable<IExternalId> externalIds);
 
         /// <summary>
@@ -185,6 +189,15 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="savers">The metadata savers.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
         Task SaveMetadataAsync(BaseItem item, ItemUpdateType updateType, IEnumerable<string> savers);
+
+        /// <summary>
+        /// Save live tv metadata.
+        /// </summary>
+        /// <param name="timer">The timer.</param>
+        /// <param name="recordingPath">The path the recording gets saved to.</param>
+        /// <param name="seriesPath">The parent path of the series.</param>
+        /// <returns>The task object representing the asynchronous operation.</returns>
+        Task SaveLiveTvMetadataAsync(TimerInfo timer, string recordingPath, string seriesPath);
 
         /// <summary>
         /// Gets the metadata options.
