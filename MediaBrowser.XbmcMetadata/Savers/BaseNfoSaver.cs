@@ -482,7 +482,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("originaltitle", item.OriginalTitle);
             }
 
-            var people = libraryManager.GetPeople(item);
+            var people = item.Id.Equals(default) ? new List<PersonInfo>() : libraryManager.GetPeople(item);
 
             var directors = people
                 .Where(i => IsPersonType(i, PersonType.Director))

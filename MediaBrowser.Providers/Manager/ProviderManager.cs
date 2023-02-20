@@ -662,23 +662,41 @@ namespace MediaBrowser.Providers.Manager
                     Limit = 1,
                     ExternalId = timer.ProgramId,
                     DtoOptions = new DtoOptions(true)
-                }).FirstOrDefault() as LiveTvProgram;
+                }).FirstOrDefault();
 
                 // dummy this up
                 if (program is null)
                 {
-                    program = new LiveTvProgram
+                    if (timer.IsProgramSeries)
                     {
-                        Name = timer.Name,
-                        Overview = timer.Overview,
-                        Genres = timer.Genres,
-                        CommunityRating = timer.CommunityRating,
-                        OfficialRating = timer.OfficialRating,
-                        ProductionYear = timer.ProductionYear,
-                        PremiereDate = timer.OriginalAirDate,
-                        IndexNumber = timer.EpisodeNumber,
-                        ParentIndexNumber = timer.SeasonNumber
-                    };
+                        program = new Episode
+                        {
+                            Name = timer.Name,
+                            Overview = timer.Overview,
+                            Genres = timer.Genres,
+                            CommunityRating = timer.CommunityRating,
+                            OfficialRating = timer.OfficialRating,
+                            ProductionYear = timer.ProductionYear,
+                            PremiereDate = timer.OriginalAirDate,
+                            IndexNumber = timer.EpisodeNumber,
+                            ParentIndexNumber = timer.SeasonNumber
+                        };
+                    }
+                    else
+                    {
+                        program = new Movie
+                        {
+                            Name = timer.Name,
+                            Overview = timer.Overview,
+                            Genres = timer.Genres,
+                            CommunityRating = timer.CommunityRating,
+                            OfficialRating = timer.OfficialRating,
+                            ProductionYear = timer.ProductionYear,
+                            PremiereDate = timer.OriginalAirDate,
+                            IndexNumber = timer.EpisodeNumber,
+                            ParentIndexNumber = timer.SeasonNumber
+                        };
+                    }
                 }
 
                 if (timer.IsSports)
