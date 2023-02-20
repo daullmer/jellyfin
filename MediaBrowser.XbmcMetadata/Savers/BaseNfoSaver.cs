@@ -197,7 +197,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
-        private async Task SaveToFileAsync(Stream stream, string path)
+        internal async Task SaveToFileAsync(Stream stream, string path)
         {
             var directory = Path.GetDirectoryName(path) ?? throw new ArgumentException($"Provided path ({path}) is not valid.", nameof(path));
             Directory.CreateDirectory(directory);
@@ -238,7 +238,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             }
         }
 
-        private void Save(BaseItem item, Stream stream, string xmlPath)
+        internal void Save(BaseItem item, Stream stream, string xmlPath)
         {
             var settings = new XmlWriterSettings
             {

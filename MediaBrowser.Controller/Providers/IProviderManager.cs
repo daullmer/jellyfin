@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Controller.Providers
@@ -196,8 +197,9 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="timer">The timer.</param>
         /// <param name="recordingPath">The path the recording gets saved to.</param>
         /// <param name="seriesPath">The parent path of the series.</param>
+        /// <param name="liveTvOptions">The live tv configuration options.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
-        Task SaveLiveTvMetadataAsync(TimerInfo timer, string recordingPath, string seriesPath);
+        Task SaveLiveTvMetadataAsync(TimerInfo timer, string recordingPath, string seriesPath, LiveTvOptions liveTvOptions);
 
         /// <summary>
         /// Gets the metadata options.

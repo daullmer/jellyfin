@@ -29,6 +29,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Providers;
 using Microsoft.Extensions.Logging;
@@ -651,7 +652,7 @@ namespace MediaBrowser.Providers.Manager
         }
 
         /// <inheritdoc />
-        public async Task SaveLiveTvMetadataAsync(TimerInfo timer, string recordingPath, string seriesPath)
+        public async Task SaveLiveTvMetadataAsync(TimerInfo timer, string recordingPath, string seriesPath, LiveTvOptions liveTvOptions)
         {
             try
             {
@@ -696,28 +697,30 @@ namespace MediaBrowser.Providers.Manager
                     program.AddGenre("News");
                 }
 
-                var config = GetConfiguration();
-
-                if (config.SaveRecordingNFO)
+                if (liveTvOptions.SaveRecordingNFO)
                 {
                     if (timer.IsProgramSeries)
                     {
-                        await SaveSeriesNfoAsync(timer, seriesPath).ConfigureAwait(false);
-                        await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
-                    }
-                    else if (!timer.IsMovie || timer.IsSports || timer.IsNews)
-                    {
-                        await SaveVideoNfoAsync(timer, recordingPath, program, true).ConfigureAwait(false);
+                        // TODO: make enabled liveTvSavers configurable
+                        foreach (var liveTvSaver in _liveTvSavers)
+                        {
+                            await liveTvSaver.SaveSeriesAsync(timer, seriesPath).ConfigureAwait(false);
+                            await liveTvSaver.SaveVideoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
+                        }
                     }
                     else
                     {
-                        await SaveVideoNfoAsync(timer, recordingPath, program, false).ConfigureAwait(false);
+                        var lockData = !timer.IsMovie || timer.IsSports || timer.IsNews;
+                        foreach (var liveTvSaver in _liveTvSavers)
+                        {
+                            await liveTvSaver.SaveVideoAsync(timer, recordingPath, program, lockData).ConfigureAwait(false);
+                        }
                     }
                 }
 
-                if (config.SaveRecordingImages)
+                if (liveTvOptions.SaveRecordingImages)
                 {
-                    await SaveRecordingImages(recordingPath, program).ConfigureAwait(false);
+                    // await SaveRecordingImages(recordingPath, program).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
